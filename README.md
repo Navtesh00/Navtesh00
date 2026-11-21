@@ -6,11 +6,8 @@
 <a href="https://github.com/Navtesh00"><img src="cards/tile-1.svg" width="32.5%" alt="Website: GitHub"></a>
 <a href="https://www.linkedin.com/in/navtesh-gophane/"><img src="cards/tile-2.svg" width="32.5%" alt="Elsewhere: LinkedIn"></a>
 <a href="https://github.com/Navtesh00/react-jobs-app"><img src="cards/tile-3.svg" width="32.5%" alt="Projects: react-jobs-app"></a>
-<img src="cards/contributions-monthly.svg" width="100%" alt="Contributions per month, last 12 months: 62 total. Current streak 0 days, 15 active days, busiest day 5 Sep 2026 with 19 contributions.">
-<a href="https://github.com/Navtesh00/Navtesh00"><img src="cards/repo-1.svg" width="100%" alt="Navtesh00: no description"></a>
-<a href="https://github.com/Navtesh00/agentcart"><img src="cards/repo-2.svg" width="100%" alt="agentcart: no description"></a>
-<a href="https://github.com/Navtesh00/url-shortner"><img src="cards/repo-3.svg" width="100%" alt="url-shortner: no description"></a>
-<img src="cards/contribution-graph.svg" width="100%" alt="Contribution graph: 62 contributions in the last year">
+<img src="cards/contributions-monthly.svg" width="100%" alt="Contributions per month, last 12 months: 63 total. Current streak 1 days, 16 active days, busiest day 5 Sep 2026 with 19 contributions.">
+<img src="cards/contribution-graph.svg" width="100%" alt="Contribution graph: 63 contributions in the last year">
 </p>
 <!-- cards:end -->
 
