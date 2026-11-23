@@ -6,7 +6,7 @@
   python scripts/render_cards.py probe URL -> print colours/fonts found on your site + current README
 
 Needs: fonttools (pyftsubset). Optional: pillow (portrait resize).
-Everything is meant for  use: inline <style> + CSS keyframes, SMIL, base64 WOFF fonts,
+Everything is meant for <img> use: inline <style> + CSS keyframes, SMIL, base64 WOFF fonts,
 base64 portrait. No external requests, no scripts.
 """
 from __future__ import annotations
@@ -28,19 +28,21 @@ W = 830  # width of README column; every full-width card is drawn at this size
 # ───────────────────────── CONFIG ─────────────────────────
 PROFILE = {
     "login": "Navtesh00",
-    "name": "Navtesh",
-    "tagline": "🚀 Web Developer | 💻 Python Learner | 🌱 AI Explorer",
-    "portrait": "assets/portrait.jpg",  # optional; skipped if the file doesn't exist
+    "name": "Navtesh Gophane",
+    "tagline": "Building thoughtful web products with React, TypeScript & Node.js",
+    "portrait": "assets/portrait.jpg",
+    "hero_url": "https://github.com/Navtesh00",
+    "activity_url": "https://github.com/Navtesh00?tab=overview",
 }
 THEME = {
-    "bg": "#0d1117",       # only used by preview.html
-    "surface": "#161b22",  # card background
-    "border": "#30363d",
+    "bg": "#0d1117",
+    "surface": "#111a24",
+    "border": "#263445",
     "text": "#e6edf3",
-    "muted": "#8b949e",
-    "brand": "#0969da",    # bars, heatmap, accents
+    "muted": "#91a4b7",
+    "brand": "#58a6ff",
 }
-FONTS = {              # missing files fall back (display/mono -> body -> system)
+FONTS = {
     "display": {"file": "assets/fonts/display.ttf", "weight": 700},
     "body":    {"file": "assets/fonts/body.ttf",    "weight": 400},
     "mono":    {"file": "assets/fonts/mono.ttf",    "weight": 400},
@@ -50,10 +52,22 @@ FALLBACK = {
     "body":    "system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif",
     "mono":    "ui-monospace,SFMono-Regular,Menlo,Consolas,monospace",
 }
-TILES = [              # exactly three
-    {"label": "Website", "title": "GitHub", "sub": "@Navtesh00", "url": "https://github.com/Navtesh00"},
-    {"label": "Elsewhere", "title": "LinkedIn", "sub": "navtesh-gophane", "url": "https://www.linkedin.com/in/navtesh-gophane/"},
-    {"label": "Projects", "title": "react-jobs-app", "sub": "React + Tailwind job board", "url": "https://github.com/Navtesh00/react-jobs-app"},
+TILES = [
+    {"label": "PROFILE", "title": "GitHub", "sub": "Explore my repositories", "url": "https://github.com/Navtesh00"},
+    {"label": "CONNECT", "title": "LinkedIn", "sub": "Let's connect professionally", "url": "https://www.linkedin.com/in/navtesh-gophane/"},
+    {"label": "LIVE BUILD", "title": "AgentCart", "sub": "Human-approved AI commerce", "url": "https://agentcart-orpin.vercel.app"},
+]
+FEATURED_REPOS = [
+    {
+        "name": "agentcart",
+        "desc": "Agentic commerce with bounded spending and human-approved payments.",
+        "url": "https://github.com/Navtesh00/agentcart",
+    },
+    {
+        "name": "url-shortner",
+        "desc": "Full-stack shortener with Redis-first redirects and BullMQ analytics.",
+        "url": "https://github.com/Navtesh00/url-shortner",
+    },
 ]
 # ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -239,23 +253,60 @@ def load():
         sys.exit(f"missing {DATA_FILE}: run the fetch step (or the workflow) first")
     raw = json.loads(DATA_FILE.read_text("utf-8"))
     root = raw if isinstance(raw, dict) else {}
-    user = (root.get("data") or {}).get("user") or root.get("user") or {}
+    api_data = root.get("data") or {}
+    user = api_data.get("user") or root.get("user") or {}
     cal = (user.get("contributionsCollection") or {}).get("contributionCalendar")
-    if cal:  # GitHub GraphQL shape
+    if cal:
         entries = [d for wk in cal["weeks"] for d in wk["contributionDays"]]
-    else:    # flat: [{"date":..,"count":..}] or {"days":[...]}
+    else:
         entries = raw if isinstance(raw, list) else root.get("days", [])
-    days = {dt.date.fromisoformat(e["date"][:10]): int(e.get("contributionCount", e.get("count", 0))) for e in entries}
+    days = {
+        dt.date.fromisoformat(e["date"][:10]): int(e.get("contributionCount", e.get("count", 0)))
+        for e in entries
+    }
     if not days:
         sys.exit("no contribution days found in the JSON")
+
+    candidates = [
+        api_data.get("featuredAgentCart"),
+        api_data.get("featuredUrlShortener"),
+        *(root.get("featuredRepos") or []),
+        *((user.get("pinnedItems") or {}).get("nodes") or []),
+        *(root.get("repos") or []),
+    ]
+    by_name = {
+        n.get("name"): n for n in candidates
+        if isinstance(n, dict) and n.get("name")
+    }
     repos = []
-    for n in (user.get("pinnedItems") or {}).get("nodes") or root.get("repos") or []:
-        if not n or "name" not in n:
+    selected = set()
+    for cfg in FEATURED_REPOS:
+        n = by_name.get(cfg["name"], {})
+        lang = n.get("primaryLanguage") or {}
+        repos.append(dict(
+            name=cfg["name"],
+            desc=" ".join((n.get("description") or cfg["desc"]).split()),
+            url=n.get("url") or cfg["url"],
+            stars=n.get("stargazerCount", n.get("stars", 0)),
+            forks=n.get("forkCount", n.get("forks", 0)),
+            lang=lang.get("name") or n.get("language"),
+            color=lang.get("color"),
+        ))
+        selected.add(cfg["name"])
+
+    for n in (user.get("pinnedItems") or {}).get("nodes") or []:
+        if not isinstance(n, dict) or not n.get("name") or n["name"] in selected:
             continue
         lang = n.get("primaryLanguage") or {}
-        repos.append(dict(name=n["name"], desc=" ".join((n.get("description") or "").split()), url=n.get("url", ""),
-                          stars=n.get("stargazerCount", n.get("stars", 0)), forks=n.get("forkCount", n.get("forks", 0)),
-                          lang=lang.get("name") or n.get("language"), color=lang.get("color")))
+        repos.append(dict(
+            name=n["name"],
+            desc=" ".join((n.get("description") or "").split()),
+            url=n.get("url", ""),
+            stars=n.get("stargazerCount", 0),
+            forks=n.get("forkCount", 0),
+            lang=lang.get("name") or n.get("language"),
+            color=lang.get("color"),
+        ))
     return days, repos, user
 
 
@@ -365,7 +416,7 @@ def chart(t0, st):
     c.text(pad, 46, "Contributions per month", "display", 18, T["text"], anim=("rise", .1))
     c.text(W - pad, 46, f'{st["total"]:,} in the last 12 months', "body", 13, T["muted"], anchor="end", anim=("rise", .15))
     colw = (W - 2 * pad) / 3
-    stats = [("Current streak", f'{st["cur"]}', "days", f'Longest: {st["longest"]} days'),
+    stats = [("Current streak", f'{st["cur"]}', "day" if st["cur"] == 1 else "days", f'Longest: {st["longest"]} days'),
              ("Active days", f'{st["active"]}', "days", f'{round(100 * st["active"] / st["span"])}% of the last {st["span"]} days'),
              ("Busiest day", f"{busy_n:,}", "contributions", fmt_date(busy_d))]
     for i, (label, val, unit, sub) in enumerate(stats):
@@ -478,6 +529,7 @@ def repo_card(t0, r):
           f'stroke-linecap="round"{c.attr(anim=("fade", .45))}><circle cx="3" cy="2.5" r="1.7"/><circle cx="9" cy="2.5" r="1.7"/>'
           f'<circle cx="6" cy="11" r="1.7"/><path d="M3 4.2v1.1c0 1 .8 1.8 1.8 1.8h2.4c1 0 1.8-.8 1.8-1.8V4.2M6 7.1v2.2"/></g></g>')
     c.text(x + 18, my, f'{r["forks"]:,}', "mono", 12, T["muted"], anim=("fade", .45))
+    c.text(W - pad, my, "VIEW REPOSITORY ↗", "mono", 10, T["brand"], anchor="end", anim=("fade", .5))
     return c
 
 
@@ -487,7 +539,7 @@ def block(prefix, items):
     for it in items:
         img = f'<img src="{prefix}{it["file"]}" width="{it["width"]}" alt="{esc(it["alt"])}">'
         rows.append(f'<a href="{esc(it["href"])}">{img}</a>' if it["href"] else img)
-    return '<p align="center">\n' + "\n".join(rows) + "\n</p>"
+    return '<div align="center">\n' + "\n".join(rows) + "\n</div>"
 
 
 def probe(site):
@@ -546,18 +598,18 @@ def main():
     # timeline: each card starts shortly after the previous one, so the page plays top to bottom
     clock, plan = 0.0, []
     h = hero(clock, name, tagline)
-    plan.append(("hero.svg", h, None, "100%"))
+    plan.append(("hero.svg", h, PROFILE["hero_url"], "100%"))
     clock += .55
     for i, cfg in enumerate(TILES):
         plan.append((f"tile-{i + 1}.svg", tile(clock + i * .12, cfg), cfg["url"], "32.5%"))
     clock += .6
     ch = chart(clock, st)
-    plan.append(("contributions-monthly.svg", ch, None, "100%"))
+    plan.append(("contributions-monthly.svg", ch, PROFILE["activity_url"], "100%"))
     clock += .7
     for i, r in enumerate(repos):
         plan.append((f"repo-{i + 1}.svg", repo_card(clock + i * .3, r), r["url"], "100%"))
     clock += len(repos) * .3 + .2
-    plan.append(("contribution-graph.svg", graph(clock, days), None, "100%"))
+    plan.append(("contribution-graph.svg", graph(clock, days), PROFILE["activity_url"], "100%"))
 
     OUT.mkdir(exist_ok=True)
     for old in OUT.glob("*.svg"):
