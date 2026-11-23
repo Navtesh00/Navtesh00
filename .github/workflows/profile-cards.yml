@@ -23,21 +23,35 @@ jobs:
         run: |
           mkdir -p data
           gh api graphql -f login="${GITHUB_REPOSITORY_OWNER}" -f query='
-            query($login:String!){ user(login:$login){
-              login name bio
-              pinnedItems(first:6, types:REPOSITORY){ nodes{ ... on Repository{
-                name description url stargazerCount forkCount primaryLanguage{ name color } } } }
-              contributionsCollection{ contributionCalendar{ totalContributions
-                weeks{ contributionDays{ date contributionCount } } } }
-            } }' > data/contributions.json
+            query($login:String!){
+              user(login:$login){
+                login name bio
+                pinnedItems(first:6, types:REPOSITORY){ nodes{ ... on Repository{
+                  name description url stargazerCount forkCount primaryLanguage{ name color } } } }
+                contributionsCollection{ contributionCalendar{ totalContributions
+                  weeks{ contributionDays{ date contributionCount } } } }
+              }
+              featuredAgentCart: repository(owner:"Navtesh00", name:"agentcart"){
+                name description url stargazerCount forkCount primaryLanguage{ name color }
+              }
+              featuredUrlShortener: repository(owner:"Navtesh00", name:"url-shortner"){
+                name description url stargazerCount forkCount primaryLanguage{ name color }
+              }
+            }' > data/contributions.json
 
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
 
-      - name: Render cards
+      - name: Validate and render cards
         run: |
           pip install fonttools pillow
+          python -m py_compile scripts/render_cards.py
           python scripts/render_cards.py
+          test -s cards/hero.svg
+          test -s cards/repo-1.svg
+          test -s cards/repo-2.svg
+          test -s cards/contributions-monthly.svg
+          test -s cards/contribution-graph.svg
 
       - name: Commit
         run: |
