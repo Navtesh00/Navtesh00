@@ -410,7 +410,8 @@ def tile(t0, cfg):
 def chart(t0, st):
     H, pad = 342, 32
     busy_d, busy_n = st["busy"]
-    c = Card(W, H, t0, (f'Contributions per month, last 12 months: {st["total"]:,} total. Current streak {st["cur"]} days, '
+    streak_unit = "day" if st["cur"] == 1 else "days"
+    c = Card(W, H, t0, (f'Contributions per month, last 12 months: {st["total"]:,} total. Current streak {st["cur"]} {streak_unit}, '
                         f'{st["active"]} active days, busiest day {fmt_date(busy_d)} with {busy_n} contributions.'))
     c.frame()
     c.text(pad, 46, "Contributions per month", "display", 18, T["text"], anim=("rise", .1))
