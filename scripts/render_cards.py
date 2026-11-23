@@ -35,7 +35,7 @@ PROFILE = {
     "activity_url": "https://github.com/Navtesh00?tab=overview",
 }
 THEME = {
-    "bg": "#0d1117",
+    "bg": "#0d1117",  # neutral GitHub-dark base; replace after a portfolio brand audit
     "surface": "#111a24",
     "border": "#263445",
     "text": "#e6edf3",
