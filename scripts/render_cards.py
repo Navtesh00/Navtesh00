@@ -536,11 +536,14 @@ def repo_card(t0, r):
 
 # ───────────────────────── output ─────────────────────────
 def block(prefix, items):
+    # Keep generated images inline instead of wrapping the entire card stack in
+    # a raw HTML <div>. GitHub's Markdown parser can otherwise treat following
+    # README sections as part of the HTML block on some render paths.
     rows = []
     for it in items:
         img = f'<img src="{prefix}{it["file"]}" width="{it["width"]}" alt="{esc(it["alt"])}">'
-        rows.append(f'<a href="{esc(it["href"])}">{img}</a>' if it["href"] else img)
-    return '<div align="center">\n' + "\n".join(rows) + "\n</div>"
+        rows.append(f'[{img}]({esc(it["href"])})' if it["href"] else img)
+    return " ".join(rows)
 
 
 def probe(site):
