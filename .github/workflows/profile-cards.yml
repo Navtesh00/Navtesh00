@@ -10,6 +10,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: profile-cards
+  cancel-in-progress: false
+
 jobs:
   refresh:
     runs-on: ubuntu-latest
@@ -53,11 +57,16 @@ jobs:
           test -s cards/contributions-monthly.svg
           test -s cards/contribution-graph.svg
 
-      - name: Commit
+      - name: Commit generated cards
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/contributions.json cards README.md
-          if git diff --staged --quiet; then echo "nothing changed"; else
-            git commit -m "chore: refresh profile cards" && git push
+          if git diff --staged --quiet; then
+            echo "nothing changed"
+            exit 0
           fi
+          git commit -m "chore: refresh profile cards"
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
