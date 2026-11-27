@@ -30,7 +30,7 @@
 <text x="287.3" y="78.0" font-size="11" fill="#91a4b7" letter-spacing="1.2" class="f-mono rise" style="animation-delay:1.40s">ACTIVE DAYS</text>
 <text x="287.3" y="116.0" font-size="34" fill="#e6edf3" class="f-display rise" style="animation-delay:1.45s">19</text>
 <text x="332.1" y="116.0" font-size="14" fill="#91a4b7" class="f-body rise" style="animation-delay:1.45s">days</text>
-<text x="287.3" y="138.0" font-size="13" fill="#91a4b7" class="f-body rise" style="animation-delay:1.50s">5% of the last 361 days</text>
+<text x="287.3" y="138.0" font-size="13" fill="#91a4b7" class="f-body rise" style="animation-delay:1.50s">5% of the last 362 days</text>
 <text x="542.7" y="78.0" font-size="11" fill="#91a4b7" letter-spacing="1.2" class="f-mono rise" style="animation-delay:1.50s">BUSIEST DAY</text>
 <text x="542.7" y="116.0" font-size="34" fill="#e6edf3" class="f-display rise" style="animation-delay:1.55s">19</text>
 <text x="587.4" y="116.0" font-size="14" fill="#91a4b7" class="f-body rise" style="animation-delay:1.55s">contributions</text>
